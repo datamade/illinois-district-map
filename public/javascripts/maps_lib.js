@@ -32,7 +32,7 @@ var MapsLib = {
   locationColumn:     "geometry",  
 
   map_centroid:       new google.maps.LatLng(40.148377, -89.364818), //center that your map defaults to
-  locationScope:      "illinois",      //geographical area appended to all address searches
+  locationScope:      "Illinois",      //geographical area appended to all address searches
   
   searchRadius:       0.001,       //in meters ~ 1/2 mile
   defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
@@ -41,7 +41,7 @@ var MapsLib = {
   showCandidates: false,
   
   initialize: function() {
-    $("#district2011_results").html("");
+    $("#district2011_results").html("<p>This is a tool for exploring Illinois Congressional Districts and the candidates that run in them.</p> <p>Enter an address above to get started.</p>");
     $("#districtICAR_results").html("");
   
     geocoder = new google.maps.Geocoder();
@@ -69,8 +69,6 @@ var MapsLib = {
     //reset filters
     $("#search_address").val(MapsLib.convertToPlainString($.address.parameter('address')));
     $(":checkbox").attr("checked", "checked");
-    $("#district2011_results").hide();
-    $("#districtICAR_results").hide();
      
     //run the default search
     MapsLib.doSearch();
