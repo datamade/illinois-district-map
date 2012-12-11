@@ -20,6 +20,7 @@ var MapsLib = {
   //NOTE: numeric IDs will be depricated soon
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
+  candidates_id:     "1RCeNQlO8XUAOLgLisy9ld669rW2cThLNtwBVnAs",
   
   //*New Fusion Tables Requirement* API key. found at https://code.google.com/apis/console/   
   //*Important* this key is for demonstration purposes. please register your own.   
@@ -37,6 +38,7 @@ var MapsLib = {
   defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
   addrMarkerImage: 'http://derekeder.com/images/icons/blue-pushpin.png',
   currentPinpoint: null,
+  showCandidates: false,
   
   initialize: function() {
     $("#district2011_results").html("");
@@ -61,6 +63,7 @@ var MapsLib = {
     MapsLib.records2011 = null;
     MapsLib.records2001 = null;
     MapsLib.recordsICAR = null;
+    MapsLib.recordsCandidates = null;
     MapsLib.map_bounds = new google.maps.LatLngBounds();
     
     //reset filters
@@ -147,6 +150,14 @@ var MapsLib = {
       });
       MapsLib.records2011.setMap(map);
     }
+
+    MapsLib.recordsCandidates = new google.maps.FusionTablesLayer({
+      query: {
+        from:   MapsLib.candidates_id,
+        select: MapsLib.locationColumn
+      }
+    });
+    MapsLib.recordsCandidates.setMap(map);
   },
   
   clearSearch: function() {
@@ -156,6 +167,8 @@ var MapsLib = {
       MapsLib.records2001.setMap(null);
     if (MapsLib.recordsICAR != null)
       MapsLib.recordsICAR.setMap(null);
+    if (MapsLib.addrMarker != null)
+      MapsLib.addrMarker.setMap(null);  
     if (MapsLib.addrMarker != null)
       MapsLib.addrMarker.setMap(null);  
   },
