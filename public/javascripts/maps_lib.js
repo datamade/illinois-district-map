@@ -18,7 +18,8 @@ var MapsLib = {
   
   //the encrypted Table ID of your Fusion Table (found under File => About)
   //NOTE: numeric IDs will be depricated soon
-  fusionTableId:      "1m4Ez9xyTGfY2CU6O-UgEcPzlS0rnzLU93e4Faa0",  
+  house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
+  houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
   
   //*New Fusion Tables Requirement* API key. found at https://code.google.com/apis/console/   
   //*Important* this key is for demonstration purposes. please register your own.   
@@ -29,36 +30,44 @@ var MapsLib = {
   //example: locationColumn:     "'my location'",
   locationColumn:     "geometry",  
 
-  map_centroid:       new google.maps.LatLng(41.8781136, -87.66677856445312), //center that your map defaults to
-  locationScope:      "chicago",      //geographical area appended to all address searches
-  recordName:         "result",       //for showing number of results
-  recordNamePlural:   "results", 
+  map_centroid:       new google.maps.LatLng(40.148377, -89.364818), //center that your map defaults to
+  locationScope:      "illinois",      //geographical area appended to all address searches
   
-  searchRadius:       805,            //in meters ~ 1/2 mile
-  defaultZoom:        11,             //zoom level when map is loaded (bigger is more zoomed in)
+  searchRadius:       0.001,       //in meters ~ 1/2 mile
+  defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
   addrMarkerImage: 'http://derekeder.com/images/icons/blue-pushpin.png',
   currentPinpoint: null,
   
   initialize: function() {
-    $( "#result_count" ).html("");
+    $("#district2011_results").html("");
+    $("#districtICAR_results").html("");
   
     geocoder = new google.maps.Geocoder();
     var myOptions = {
       zoom: MapsLib.defaultZoom,
       center: MapsLib.map_centroid,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      styles: [
+        {
+          stylers: [
+            { saturation: -100 },
+            { lightness: 40 }
+          ]
+        }
+      ]
     };
     map = new google.maps.Map($("#map_canvas")[0],myOptions);
     
-    MapsLib.searchrecords = null;
+    MapsLib.records2011 = null;
+    MapsLib.records2001 = null;
+    MapsLib.recordsICAR = null;
+    MapsLib.map_bounds = new google.maps.LatLngBounds();
     
     //reset filters
     $("#search_address").val(MapsLib.convertToPlainString($.address.parameter('address')));
-    var loadRadius = MapsLib.convertToPlainString($.address.parameter('radius'));
-    if (loadRadius != "") $("#search_radius").val(loadRadius);
-    else $("#search_radius").val(MapsLib.searchRadius);
     $(":checkbox").attr("checked", "checked");
-    $("#result_count").hide();
+    $("#district2011_results").hide();
+    $("#districtICAR_results").hide();
      
     //run the default search
     MapsLib.doSearch();
@@ -67,13 +76,8 @@ var MapsLib = {
   doSearch: function(location) {
     MapsLib.clearSearch();
     var address = $("#search_address").val();
-    MapsLib.searchRadius = $("#search_radius").val();
 
-    var whereClause = MapsLib.locationColumn + " not equal to ''";
-    
-    //-----custom filters-------
-    
-    //-------end of custom filters--------
+    var whereClause = "";
     
     if (address != "") {
       if (address.toLowerCase().indexOf(MapsLib.locationScope) == -1)
@@ -84,9 +88,8 @@ var MapsLib = {
           MapsLib.currentPinpoint = results[0].geometry.location;
           
           $.address.parameter('address', encodeURIComponent(address));
-          $.address.parameter('radius', encodeURIComponent(MapsLib.searchRadius));
           map.setCenter(MapsLib.currentPinpoint);
-          map.setZoom(14);
+          map.setZoom(10);
           
           MapsLib.addrMarker = new google.maps.Marker({
             position: MapsLib.currentPinpoint, 
@@ -96,9 +99,8 @@ var MapsLib = {
             title:address
           });
           
-          whereClause += " AND ST_INTERSECTS(" + MapsLib.locationColumn + ", CIRCLE(LATLNG" + MapsLib.currentPinpoint.toString() + "," + MapsLib.searchRadius + "))";
+          whereClause += " ST_INTERSECTS(" + MapsLib.locationColumn + ", CIRCLE(LATLNG" + MapsLib.currentPinpoint.toString() + "," + MapsLib.searchRadius + "))";
           
-          MapsLib.drawSearchRadiusCircle(MapsLib.currentPinpoint);
           MapsLib.submitSearch(whereClause, map, MapsLib.currentPinpoint);
         } 
         else {
@@ -113,24 +115,49 @@ var MapsLib = {
   
   submitSearch: function(whereClause, map, location) {
     //get using all filters
-    MapsLib.searchrecords = new google.maps.FusionTablesLayer({
-      query: {
-        from:   MapsLib.fusionTableId,
-        select: MapsLib.locationColumn,
-        where:  whereClause
-      }
-    });
-    MapsLib.searchrecords.setMap(map);
-    MapsLib.getCount(whereClause);
+    if (whereClause != '') {
+      MapsLib.records2011 = new google.maps.FusionTablesLayer({
+        query: {
+          from:   MapsLib.house2011_id,
+          select: MapsLib.locationColumn,
+          where:  whereClause
+        }
+      });
+      MapsLib.records2011.setMap(map);
+      MapsLib.getDistrict2011Number(whereClause);
+
+      MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
+        query: {
+          from:   MapsLib.houseICAR_id,
+          select: MapsLib.locationColumn,
+          where:  whereClause
+        }
+      });
+      MapsLib.recordsICAR.setMap(map);
+      MapsLib.getDistrictICARNumber(whereClause);
+
+      MapsLib.addMapBounds(whereClause);
+    }
+    else {
+      MapsLib.records2011 = new google.maps.FusionTablesLayer({
+        query: {
+          from:   MapsLib.house2011_id,
+          select: MapsLib.locationColumn
+        }
+      });
+      MapsLib.records2011.setMap(map);
+    }
   },
   
   clearSearch: function() {
-    if (MapsLib.searchrecords != null)
-      MapsLib.searchrecords.setMap(null);
+    if (MapsLib.records2011 != null)
+      MapsLib.records2011.setMap(null);
+    if (MapsLib.records2001 != null)
+      MapsLib.records2001.setMap(null);
+    if (MapsLib.recordsICAR != null)
+      MapsLib.recordsICAR.setMap(null);
     if (MapsLib.addrMarker != null)
       MapsLib.addrMarker.setMap(null);  
-    if (MapsLib.searchRadiusCircle != null)
-      MapsLib.searchRadiusCircle.setMap(null);
   },
   
   findMe: function() {
@@ -162,33 +189,20 @@ var MapsLib = {
     });
   },
   
-  drawSearchRadiusCircle: function(point) {
-      var circleOptions = {
-        strokeColor: "#4b58a6",
-        strokeOpacity: 0.3,
-        strokeWeight: 1,
-        fillColor: "#4b58a6",
-        fillOpacity: 0.05,
-        map: map,
-        center: point,
-        clickable: false,
-        zIndex: -1,
-        radius: parseInt(MapsLib.searchRadius)
-      };
-      MapsLib.searchRadiusCircle = new google.maps.Circle(circleOptions);
-  },
-  
-  query: function(selectColumns, whereClause, callback) {
+  query: function(selectColumns, whereClause, fusionTableId, callback) {
     var queryStr = [];
     queryStr.push("SELECT " + selectColumns);
-    queryStr.push(" FROM " + MapsLib.fusionTableId);
-    queryStr.push(" WHERE " + whereClause);
+    queryStr.push(" FROM " + fusionTableId);
+    if (whereClause != '')
+      queryStr.push(" WHERE " + whereClause);
   
+    //console.log(queryStr.join(" "));
     var sql = encodeURIComponent(queryStr.join(" "));
     $.ajax({url: "https://www.googleapis.com/fusiontables/v1/query?sql="+sql+"&callback="+callback+"&key="+MapsLib.googleApiKey, dataType: "jsonp"});
   },
 
   handleError: function(json) {
+    //console.log(json);
     if (json["error"] != undefined) {
       var error = json["error"]["errors"]
       console.log("Error in Fusion Table call!");
@@ -200,24 +214,80 @@ var MapsLib = {
     }
   },
   
-  getCount: function(whereClause) {
-    var selectColumns = "Count()";
-    MapsLib.query(selectColumns, whereClause,"MapsLib.displaySearchCount");
+  getDistrict2011Number: function(whereClause) {
+    var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
+    MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.displayDistrict2011Number");
   },
   
-  displaySearchCount: function(json) { 
+  displayDistrict2011Number: function(json) { 
+    MapsLib.renderResults(json, "district2011_results", "2011 House District: ")
+  },
+
+  getDistrictICARNumber: function(whereClause) {
+    var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
+    MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.displayDistrictICARNumber");
+  },
+  
+  displayDistrictICARNumber: function(json) { 
+    MapsLib.renderResults(json, "districtICAR_results", "ICAR House District: ")
+  },
+
+  renderResults: function(json, selector, text) {
     MapsLib.handleError(json);
-    var numRows = 0;
-    if (json["rows"] != null)
-      numRows = json["rows"][0];
+    if (json["rows"] != null) {
+      var data = json["rows"];
     
-    var name = MapsLib.recordNamePlural;
-    if (numRows == 1)
-    name = MapsLib.recordName;
-    $( "#result_count" ).fadeOut(function() {
-        $( "#result_count" ).html(MapsLib.addCommas(numRows) + " " + name + " found");
-      });
-    $( "#result_count" ).fadeIn();
+      $("#" + selector).fadeOut(function() {
+        var template = "\
+            <h4>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>\
+            <p>\
+              <strong>Population:</strong> " + MapsLib.addCommas(data[0][1]) + "\
+              <br />\
+              <strong>Compact Score:</strong> " + data[0][2] + "%\
+              <br />\
+              <strong>Asian:</strong> " + data[0][3] + "%\
+              <br />\
+              <strong>Black:</strong> " + data[0][4] + "%\
+              <br />\
+              <strong>Hispanic:</strong> " + data[0][5] + "%\
+              <br />\
+              <strong>Non-hispanic White:</strong> " + data[0][6] + "%\
+            </p>"
+          $("#" + selector).html(template);
+        });
+      $("#" + selector).fadeIn();
+    }
+  },
+
+  addMapBounds: function(whereClause) {
+    var selectColumns = "geometry";
+    MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.setMapBounds");
+    MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.setMapBounds");
+  },
+
+  setMapBounds: function(json) {
+    MapsLib.handleError(json);
+    var rows = json["rows"];
+
+    for (var i in rows) {
+      var newCoordinates = [];
+      var geometries = rows[0][0]['geometries'];
+      if (geometries) {
+        for (var j in geometries) {
+          MapsLib.constructNewCoordinates(geometries[j]);
+        }
+      } else {
+        MapsLib.constructNewCoordinates(rows[0][0]['geometry']);
+      }
+      map.fitBounds(MapsLib.map_bounds);
+    }
+  },
+
+  constructNewCoordinates: function(polygon) {
+    var coordinates = polygon['coordinates'][0];
+    for (var i in coordinates) {
+      MapsLib.map_bounds.extend(new google.maps.LatLng(coordinates[i][1], coordinates[i][0]));
+    }
   },
   
   addCommas: function(nStr) {
@@ -236,5 +306,18 @@ var MapsLib = {
   convertToPlainString: function(text) {
     if (text == undefined) return '';
     return decodeURIComponent(text);
+  },
+
+  numberSuffix: function(d) {
+    var lastDigit = d[d.toString().length-1];
+
+    // Default to "th"
+    var suffix = "th";
+    switch(lastDigit) {
+        case "1": suffix = "st";
+        case "2": suffix = "nd";
+        case "3": suffix = "rd";
+    }
+    return d + suffix;
   }
 }
