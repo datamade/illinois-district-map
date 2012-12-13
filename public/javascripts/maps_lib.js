@@ -122,7 +122,9 @@ var MapsLib = {
           from:   MapsLib.house2011_id,
           select: MapsLib.locationColumn,
           where:  whereClause
-        }
+        },
+        styleId: 2,
+        templateId: 2
       });
       MapsLib.records2011.setMap(map);
       MapsLib.getDistrict2011Number(whereClause);
@@ -132,7 +134,9 @@ var MapsLib = {
           from:   MapsLib.houseICAR_id,
           select: MapsLib.locationColumn,
           where:  whereClause
-        }
+        },
+        styleId: 2,
+        templateId: 2
       });
       MapsLib.recordsICAR.setMap(map);
       MapsLib.getDistrictICARNumber(whereClause);
@@ -144,7 +148,9 @@ var MapsLib = {
         query: {
           from:   MapsLib.house2011_id,
           select: MapsLib.locationColumn
-        }
+        },
+        styleId: 2,
+        templateId: 2
       });
       MapsLib.records2011.setMap(map);
     }
@@ -153,7 +159,9 @@ var MapsLib = {
       query: {
         from:   MapsLib.candidates_id,
         select: MapsLib.locationColumn
-      }
+      },
+      styleId: 1,
+      templateId: 2
     });
     MapsLib.recordsCandidates.setMap(map);
   },
@@ -231,7 +239,7 @@ var MapsLib = {
   },
   
   displayDistrict2011Number: function(json) { 
-    MapsLib.renderResults(json, "district2011_results", "2011 House District: ")
+    MapsLib.renderResults(json, "district2011_results", "2011 House District: ", "map-2011")
   },
 
   getDistrictICARNumber: function(whereClause) {
@@ -240,17 +248,17 @@ var MapsLib = {
   },
   
   displayDistrictICARNumber: function(json) { 
-    MapsLib.renderResults(json, "districtICAR_results", "ICAR House District: ")
+    MapsLib.renderResults(json, "districtICAR_results", "ICAR House District: ", "map-icar")
   },
 
-  renderResults: function(json, selector, text) {
+  renderResults: function(json, selector, text, css_class) {
     MapsLib.handleError(json);
     if (json["rows"] != null) {
       var data = json["rows"];
     
       $("#" + selector).fadeOut(function() {
         var template = "\
-            <h4>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>\
+            <h4 class='" + css_class + "'>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>\
             <p>\
               <strong>Population:</strong> " + MapsLib.addCommas(data[0][1]) + "\
               <br />\
