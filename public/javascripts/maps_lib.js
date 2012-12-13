@@ -330,13 +330,13 @@ var MapsLib = {
 
   numberSuffix: function(d) {
     var lastDigit = d[d.toString().length-1];
-
+    
     // Default to "th"
     var suffix = "th";
     switch(lastDigit) {
-        case "1": suffix = "st";
-        case "2": suffix = "nd";
-        case "3": suffix = "rd";
+        case 1: suffix = "st";
+        case 2: suffix = "nd";
+        case 3: suffix = "rd";
     }
     return d + suffix;
   }
