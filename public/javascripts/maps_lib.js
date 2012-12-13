@@ -158,7 +158,8 @@ var MapsLib = {
     MapsLib.recordsCandidates = new google.maps.FusionTablesLayer({
       query: {
         from:   MapsLib.candidates_id,
-        select: MapsLib.locationColumn
+        select: MapsLib.locationColumn,
+        where: "Seeking contains ignoring case 'house'"
       },
       styleId: 1,
       templateId: 2
