@@ -18,6 +18,7 @@ var MapsLib = {
   
   //the encrypted Table ID of your Fusion Table (found under File => About)
   //NOTE: numeric IDs will be depricated soon
+  house2001_id:      "199FXtaeX3tF1XDmnVGeJht67habsQ6z1fn4bMz8",
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
   candidates_id:     "1RCeNQlO8XUAOLgLisy9ld669rW2cThLNtwBVnAs",
@@ -41,7 +42,8 @@ var MapsLib = {
   showCandidates: false,
   
   initialize: function() {
-    $("#district2011_results").html("<p>This is a tool for exploring Illinois Congressional Districts and the candidates that run in them.</p> <p>Enter an address above to get started.</p>");
+    $("#district2001_results").html("");
+    $("#district2011_results").html("<p>This is a tool for exploring Illinois Legislative Districts and the candidates that run in them.</p> <p>Enter an address above to get started.</p>");
     $("#districtICAR_results").html("");
   
     geocoder = new google.maps.Geocoder();
@@ -64,7 +66,6 @@ var MapsLib = {
     MapsLib.records2001 = null;
     MapsLib.recordsICAR = null;
     MapsLib.recordsCandidates = null;
-    MapsLib.map_bounds = new google.maps.LatLngBounds();
     
     //reset filters
     $("#search_address").val(MapsLib.convertToPlainString($.address.parameter('address')));
@@ -117,6 +118,18 @@ var MapsLib = {
   submitSearch: function(whereClause, map, location) {
     //get using all filters
     if (whereClause != '') {
+      MapsLib.records2001 = new google.maps.FusionTablesLayer({
+        query: {
+          from:   MapsLib.house2001_id,
+          select: MapsLib.locationColumn,
+          where:  whereClause
+        },
+        styleId: 2,
+        templateId: 2
+      });
+      MapsLib.records2001.setMap(map);
+      MapsLib.getDistrict2001Number(whereClause);
+
       MapsLib.records2011 = new google.maps.FusionTablesLayer({
         query: {
           from:   MapsLib.house2011_id,
@@ -129,17 +142,17 @@ var MapsLib = {
       MapsLib.records2011.setMap(map);
       MapsLib.getDistrict2011Number(whereClause);
 
-      MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
-        query: {
-          from:   MapsLib.houseICAR_id,
-          select: MapsLib.locationColumn,
-          where:  whereClause
-        },
-        styleId: 2,
-        templateId: 2
-      });
-      MapsLib.recordsICAR.setMap(map);
-      MapsLib.getDistrictICARNumber(whereClause);
+      // MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
+      //   query: {
+      //     from:   MapsLib.houseICAR_id,
+      //     select: MapsLib.locationColumn,
+      //     where:  whereClause
+      //   },
+      //   styleId: 2,
+      //   templateId: 2
+      // });
+      // MapsLib.recordsICAR.setMap(map);
+      // MapsLib.getDistrictICARNumber(whereClause);
 
       MapsLib.addMapBounds(whereClause);
     }
@@ -178,6 +191,11 @@ var MapsLib = {
       MapsLib.addrMarker.setMap(null);  
     if (MapsLib.addrMarker != null)
       MapsLib.addrMarker.setMap(null);  
+
+    if (MapsLib.recordsCandidates != null)
+      MapsLib.recordsCandidates.setMap(null);  
+
+    MapsLib.map_bounds = new google.maps.LatLngBounds();
   },
   
   findMe: function() {
@@ -233,6 +251,25 @@ var MapsLib = {
       }
     }
   },
+
+  getDistrict2001Number: function(whereClause) {
+    var selectColumns = "'District Number'";
+    MapsLib.query(selectColumns, whereClause, MapsLib.house2001_id, "MapsLib.displayDistrict2001Number");
+  },
+  
+  displayDistrict2001Number: function(json) { 
+    MapsLib.handleError(json);
+    if (json["rows"] != null) {
+      var data = json["rows"];
+    
+      $("#district2001_results").fadeOut(function() {
+        var template = "\
+            <h4 class='map-2001'>2001 House District: " + MapsLib.numberSuffix(data[0][0]) + "</h4>"
+          $("#district2001_results").html(template);
+        });
+      $("#district2001_results").fadeIn();
+    }
+  },
   
   getDistrict2011Number: function(whereClause) {
     var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
@@ -259,20 +296,20 @@ var MapsLib = {
     
       $("#" + selector).fadeOut(function() {
         var template = "\
-            <h4 class='" + css_class + "'>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>\
-            <p>\
-              <strong>Population:</strong> " + MapsLib.addCommas(data[0][1]) + "\
-              <br />\
-              <strong>Compact Score:</strong> " + data[0][2] + "%\
-              <br />\
-              <strong>Asian:</strong> " + data[0][3] + "%\
-              <br />\
-              <strong>Black:</strong> " + data[0][4] + "%\
-              <br />\
-              <strong>Hispanic:</strong> " + data[0][5] + "%\
-              <br />\
-              <strong>Non-hispanic White:</strong> " + data[0][6] + "%\
-            </p>"
+            <h4 class='" + css_class + "'>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>"
+            // <p>\
+            //   <strong>Population:</strong> " + MapsLib.addCommas(data[0][1]) + "\
+            //   <br />\
+            //   <strong>Compact Score:</strong> " + data[0][2] + "%\
+            //   <br />\
+            //   <strong>Asian:</strong> " + data[0][3] + "%\
+            //   <br />\
+            //   <strong>Black:</strong> " + data[0][4] + "%\
+            //   <br />\
+            //   <strong>Hispanic:</strong> " + data[0][5] + "%\
+            //   <br />\
+            //   <strong>Non-hispanic White:</strong> " + data[0][6] + "%\
+            // </p>"
           $("#" + selector).html(template);
         });
       $("#" + selector).fadeIn();
@@ -281,6 +318,7 @@ var MapsLib = {
 
   addMapBounds: function(whereClause) {
     var selectColumns = "geometry";
+    MapsLib.query(selectColumns, whereClause, MapsLib.house2001_id, "MapsLib.setMapBounds");
     MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.setMapBounds");
     MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.setMapBounds");
   },
