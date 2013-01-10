@@ -21,7 +21,7 @@ var MapsLib = {
   house2001_id:      "199FXtaeX3tF1XDmnVGeJht67habsQ6z1fn4bMz8",
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
-  candidates_id:     "1RCeNQlO8XUAOLgLisy9ld669rW2cThLNtwBVnAs",
+  candidates_id:     "12iQQ4X__dvvP4oSgdN6Qnmexq31XqPN7rEmV348",
   
   //*New Fusion Tables Requirement* API key. found at https://code.google.com/apis/console/   
   //*Important* this key is for demonstration purposes. please register your own.   
@@ -33,13 +33,13 @@ var MapsLib = {
   locationColumn:     "geometry",  
 
   map_centroid:       new google.maps.LatLng(40.148377, -89.364818), //center that your map defaults to
-  locationScope:      "Illinois",      //geographical area appended to all address searches
+  locationScope:      " IL",      //geographical area appended to all address searches
   
   searchRadius:       0.001,       //in meters ~ 1/2 mile
   defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
   addrMarkerImage: 'http://derekeder.com/images/icons/blue-pushpin.png',
   currentPinpoint: null,
-  showCandidates: false,
+  markers: [],
   
   initialize: function() {
     $("#district2001_results").html("");
@@ -65,6 +65,7 @@ var MapsLib = {
     MapsLib.records2011 = null;
     MapsLib.records2001 = null;
     MapsLib.recordsICAR = null;
+
     MapsLib.recordsCandidates = null;
     
     //reset filters
@@ -82,7 +83,7 @@ var MapsLib = {
     var whereClause = "";
     
     if (address != "") {
-      if (address.toLowerCase().indexOf(MapsLib.locationScope) == -1)
+      if (address.indexOf(MapsLib.locationScope) == -1)
         address = address + " " + MapsLib.locationScope;
   
       geocoder.geocode( { 'address': address}, function(results, status) {
@@ -167,17 +168,6 @@ var MapsLib = {
       });
       MapsLib.records2011.setMap(map);
     }
-
-    MapsLib.recordsCandidates = new google.maps.FusionTablesLayer({
-      query: {
-        from:   MapsLib.candidates_id,
-        select: MapsLib.locationColumn,
-        where: "Seeking contains ignoring case 'house'"
-      },
-      styleId: 1,
-      templateId: 2
-    });
-    MapsLib.recordsCandidates.setMap(map);
   },
   
   clearSearch: function() {
@@ -192,8 +182,14 @@ var MapsLib = {
     if (MapsLib.addrMarker != null)
       MapsLib.addrMarker.setMap(null);  
 
-    if (MapsLib.recordsCandidates != null)
-      MapsLib.recordsCandidates.setMap(null);  
+    //clear map markers
+    if (MapsLib.markers) {
+      for (i in MapsLib.markers) {
+        MapsLib.markers[i].setMap(null);
+      }
+      google.maps.event.clearListeners(map, 'click');
+      MapsLib.markers = [];
+    } 
 
     MapsLib.map_bounds = new google.maps.LatLngBounds();
   },
@@ -261,13 +257,10 @@ var MapsLib = {
     MapsLib.handleError(json);
     if (json["rows"] != null) {
       var data = json["rows"];
-    
-      $("#district2001_results").fadeOut(function() {
-        var template = "\
-            <h4 class='map-2001'>2001 House District: " + MapsLib.numberSuffix(data[0][0]) + "</h4>"
-          $("#district2001_results").html(template);
-        });
-      $("#district2001_results").fadeIn();
+
+      number2001 = data[0][0];
+      MapsLib.renderSidebar("district2001_results", "<h4 class='map-2001'>2001 House District: " + MapsLib.numberSuffix(number2001) + "</h4>")
+      MapsLib.getCandidates('2001', number2001);
     }
   },
   
@@ -277,7 +270,14 @@ var MapsLib = {
   },
   
   displayDistrict2011Number: function(json) { 
-    MapsLib.renderResults(json, "district2011_results", "2011 House District: ", "map-2011")
+    MapsLib.handleError(json);
+    if (json["rows"] != null) {
+      var data = json["rows"];
+
+      number2011 = data[0][0];
+      MapsLib.renderSidebar("district2011_results", "<h4 class='map-2011'>2011 House District: " + MapsLib.numberSuffix(number2011) + "</h4>")
+      MapsLib.getCandidates('2011', number2011);
+    }
   },
 
   getDistrictICARNumber: function(whereClause) {
@@ -286,34 +286,105 @@ var MapsLib = {
   },
   
   displayDistrictICARNumber: function(json) { 
-    MapsLib.renderResults(json, "districtICAR_results", "ICAR House District: ", "map-icar")
-  },
-
-  renderResults: function(json, selector, text, css_class) {
     MapsLib.handleError(json);
     if (json["rows"] != null) {
       var data = json["rows"];
-    
-      $("#" + selector).fadeOut(function() {
-        var template = "\
-            <h4 class='" + css_class + "'>" + text + MapsLib.numberSuffix(data[0][0]) + "</h4>"
-            // <p>\
-            //   <strong>Population:</strong> " + MapsLib.addCommas(data[0][1]) + "\
-            //   <br />\
-            //   <strong>Compact Score:</strong> " + data[0][2] + "%\
-            //   <br />\
-            //   <strong>Asian:</strong> " + data[0][3] + "%\
-            //   <br />\
-            //   <strong>Black:</strong> " + data[0][4] + "%\
-            //   <br />\
-            //   <strong>Hispanic:</strong> " + data[0][5] + "%\
-            //   <br />\
-            //   <strong>Non-hispanic White:</strong> " + data[0][6] + "%\
-            // </p>"
-          $("#" + selector).html(template);
-        });
-      $("#" + selector).fadeIn();
+
+      numberICAR = data[0][0];
+      MapsLib.renderSidebar("districtICAR_results", "<h4 class='map-icar'>ICAR House District: " + MapsLib.numberSuffix(numberICAR) + "</h4>")
+      // MapsLib.getCandidates('icar', numberICAR);
     }
+  },
+
+  getCandidates: function(district_type, district_number) {
+    var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "'";
+    var whereClause = "district_" + district_type + " = " + district_number;
+    MapsLib.query(selectColumns, whereClause, MapsLib.candidates_id, "MapsLib.renderCandidates");
+  },
+
+  renderCandidates: function(json) {
+    //console.log(json["columns"]);
+    MapsLib.handleError(json);
+    var data = json["rows"];
+    var template = "";
+
+    var district_type = '2001';
+    if (json["columns"][8] == '2011')
+      district_type = '2011';
+    //console.log('district_type: ' + district_type);
+
+    var results = $("#candidatesList" + district_type);
+    results.hide().empty(); //hide the existing list and empty it out first
+
+    if (data == null) {
+      //clear results list
+      results.append("<li><span class='lead'>No candidates found</span></li>");
+    }
+    else {
+      var counter = 0;
+      for (var row in data) {
+        
+        setTimeout((function(row) {
+             return function(){
+                MapsLib.addCandidateMarker(data[row], district_type);
+             };
+         })(row), counter * 0); //change this to 100 for cool animation!
+
+        counter++;
+
+        template = "\
+          <p>\
+            <strong>" + data[row][0] + " " + data[row][1] + "</strong>\
+            <br />\
+            " + data[row][2] + "\
+          </p>"
+
+        results.append(template);
+      }
+    }
+    var resultCount = 0;
+    if (data != undefined)
+      resultCount = data.length;
+    results.fadeIn(); //tada!
+  },
+
+  renderSidebar: function(selector, text) {
+    $("#" + selector).fadeOut(function() {
+      $("#" + selector).html(text);
+    });
+    $("#" + selector).fadeIn();
+  },
+
+  addCandidateMarker: function(record, district_type) {
+    //console.log(record);
+    var coordinate = new google.maps.LatLng(record[3],record[4])
+    var marker = new google.maps.Marker({
+      map: map,
+      position: coordinate,
+      animation: google.maps.Animation.DROP
+    });
+    MapsLib.markers.push(marker);
+
+    var content = "\
+        <div class='googft-info-window' style='font-family: sans-serif'>\
+          <span class='lead'>" + record[0] + " " + record[1] + "</span>\
+          <br /><strong>Seeking:</strong> " + record[2] + "\
+          <br /><strong>2001 district:</strong> " + record[5] + "\
+          <br /><strong>2011 district:</strong> " + record[6] + "\
+          <br /><strong>ICAR district:</strong> " + record[7] + "\
+        </div>";
+
+    //add a click listener to the marker to open an InfoWindow,
+    google.maps.event.addListener(marker, 'click', function(event) {
+      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+
+      MapsLib.infoWindow = new google.maps.InfoWindow( {
+        position: coordinate,
+        content: content
+      });
+      MapsLib.infoWindow.open(map);
+    });
+
   },
 
   addMapBounds: function(whereClause) {
