@@ -413,31 +413,35 @@ var MapsLib = {
 
     //add a click listener to the marker to open an InfoWindow,
     google.maps.event.addListener(marker, 'mouseover', function(event) {
-      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+      setTimeout(function(){
+        if(MapsLib.infoWindow) MapsLib.infoWindow.close();
 
-      MapsLib.infoWindow = new google.maps.InfoWindow( {
-        position: coordinate,
-        content: content
-      });
-      MapsLib.infoWindow.open(map);
+        MapsLib.infoWindow = new google.maps.InfoWindow( {
+          position: coordinate,
+          content: content
+        });
+        MapsLib.infoWindow.open(map);
+      },100);
     });
     google.maps.event.addListener(marker, 'mouseout', function(event) {
-      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+      setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, 100);
     });
 
     $('#candidate-' + record[9]).hover(
       function(){
-      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+        setTimeout(function(){
+          if(MapsLib.infoWindow) MapsLib.infoWindow.close();
 
-      MapsLib.infoWindow = new google.maps.InfoWindow( {
-        position: coordinate,
-        content: content
-      });
-      MapsLib.infoWindow.open(map);
-      map.setCenter(marker.getPosition())
+          MapsLib.infoWindow = new google.maps.InfoWindow( {
+            position: coordinate,
+            content: content
+          });
+          MapsLib.infoWindow.open(map);
+          map.panTo(marker.getPosition());
+        }, 100);
       },
       function () {
-        if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+        setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, 100);
       });
   },
 
