@@ -173,9 +173,16 @@ var MapsLib = {
           select: MapsLib.locationColumn
         },
         styleId: 2,
-        templateId: 2
+        templateId: 2,
+        suppressInfoWindows: true
       });
       MapsLib.records2011.setMap(map);
+      MapsLib.enableMapTips();
+
+      google.maps.event.addListener(MapsLib.records2011, 'click', function(event) {
+        console.log('clicked! ' + event.latLng);
+        MapsLib.addrFromLatLng(event.latLng);
+      });
     }
   },
   
@@ -258,6 +265,26 @@ var MapsLib = {
         console.log(" Message: " + error[row]["message"]);
       }
     }
+  },
+
+  // enable2001MapTips: function () {
+  //   MapsLib.records2001.enableMapTips({
+  //     select: "'District Number'",
+  //     from: MapsLib.house2001_id,
+  //     geometryColumn: MapsLib.locationColumn,
+  //     googleApiKey: MapsLib.googleApiKey,
+  //     delay: 100
+  //   });
+  // },
+
+  enableMapTips: function () {
+    MapsLib.records2011.enableMapTips({
+      select: "name",
+      from: MapsLib.house2011_id,
+      geometryColumn: MapsLib.locationColumn,
+      googleApiKey: MapsLib.googleApiKey,
+      delay: 100
+    });
   },
 
   getDistrict2001Number: function(whereClause) {
