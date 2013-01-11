@@ -22,6 +22,10 @@ var MapsLib = {
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
   candidates_id:     "12iQQ4X__dvvP4oSgdN6Qnmexq31XqPN7rEmV348",
+
+  candidate2001Marker: '/icons/candidate-purple.png',
+  candidate2011Marker: '/icons/candidate-green.png',
+  candidateBothMarker: '/icons/candidate-orange.png',
   
   //*New Fusion Tables Requirement* API key. found at https://code.google.com/apis/console/   
   //*Important* this key is for demonstration purposes. please register your own.   
@@ -39,11 +43,13 @@ var MapsLib = {
   defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
   addrMarkerImage: 'http://derekeder.com/images/icons/blue-pushpin.png',
   currentPinpoint: null,
+  number2001: null,
+  number2011: null,
   markers: [],
   
   initialize: function() {
     $("#district2001_results").html("");
-    $("#district2011_results").html("<p>This is a tool for exploring Illinois Legislative Districts and the candidates that run in them.</p> <p>Enter an address above to get started.</p>");
+    $("#district2011_results").html("");
     $("#districtICAR_results").html("");
   
     geocoder = new google.maps.Geocoder();
@@ -83,7 +89,7 @@ var MapsLib = {
     var whereClause = "";
     
     if (address != "") {
-      if (address.indexOf(MapsLib.locationScope) == -1)
+      if (address.toUpperCase().indexOf(MapsLib.locationScope) == -1)
         address = address + " " + MapsLib.locationScope;
   
       geocoder.geocode( { 'address': address}, function(results, status) {
@@ -156,6 +162,9 @@ var MapsLib = {
       // MapsLib.getDistrictICARNumber(whereClause);
 
       MapsLib.addMapBounds(whereClause);
+
+      $('#enter_search').hide();
+      $('#results').show();
     }
     else {
       MapsLib.records2011 = new google.maps.FusionTablesLayer({
@@ -181,6 +190,9 @@ var MapsLib = {
       MapsLib.addrMarker.setMap(null);  
     if (MapsLib.addrMarker != null)
       MapsLib.addrMarker.setMap(null);  
+
+    MapsLib.number2001 = null;
+    MapsLib.number2011 = null;
 
     //clear map markers
     if (MapsLib.markers) {
@@ -258,9 +270,9 @@ var MapsLib = {
     if (json["rows"] != null) {
       var data = json["rows"];
 
-      number2001 = data[0][0];
-      MapsLib.renderSidebar("district2001_results", "<h4 class='map-2001'>2001 House District: " + MapsLib.numberSuffix(number2001) + "</h4>")
-      MapsLib.getCandidates('2001', number2001);
+      MapsLib.number2001 = data[0][0];
+      MapsLib.renderSidebar("district2001_results", MapsLib.numberSuffix(MapsLib.number2001))
+      MapsLib.fetchCandidatesForAll();
     }
   },
   
@@ -274,31 +286,32 @@ var MapsLib = {
     if (json["rows"] != null) {
       var data = json["rows"];
 
-      number2011 = data[0][0];
-      MapsLib.renderSidebar("district2011_results", "<h4 class='map-2011'>2011 House District: " + MapsLib.numberSuffix(number2011) + "</h4>")
-      MapsLib.getCandidates('2011', number2011);
+      MapsLib.number2011 = data[0][0];
+      MapsLib.renderSidebar("district2011_results", MapsLib.numberSuffix(MapsLib.number2011))
+      MapsLib.fetchCandidatesForAll();
     }
   },
 
-  getDistrictICARNumber: function(whereClause) {
-    var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
-    MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.displayDistrictICARNumber");
-  },
-  
-  displayDistrictICARNumber: function(json) { 
-    MapsLib.handleError(json);
-    if (json["rows"] != null) {
-      var data = json["rows"];
-
-      numberICAR = data[0][0];
-      MapsLib.renderSidebar("districtICAR_results", "<h4 class='map-icar'>ICAR House District: " + MapsLib.numberSuffix(numberICAR) + "</h4>")
-      // MapsLib.getCandidates('icar', numberICAR);
+  fetchCandidatesForAll: function() {
+    if (MapsLib.number2001 != null && MapsLib.number2011 != null)
+    {
+      MapsLib.getCandidates('2001');
+      MapsLib.getCandidates('2011');
+      MapsLib.getCandidates('both');
     }
+    // else
+    //   console.log('waiting for all district results');
   },
 
-  getCandidates: function(district_type, district_number) {
-    var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "'";
-    var whereClause = "district_" + district_type + " = " + district_number;
+  getCandidates: function(district_type) {
+    var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id";
+    var whereClause = "";
+    if (district_type == '2001')
+      whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 NOT EQUAL TO " + MapsLib.number2011;
+    if (district_type == '2011')
+      whereClause = "district_2001 NOT EQUAL TO " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
+    if (district_type == 'both')
+      whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
     MapsLib.query(selectColumns, whereClause, MapsLib.candidates_id, "MapsLib.renderCandidates");
   },
 
@@ -308,10 +321,19 @@ var MapsLib = {
     var data = json["rows"];
     var template = "";
 
+    var candidateMarker = MapsLib.candidate2001Marker;
     var district_type = '2001';
-    if (json["columns"][8] == '2011')
+    if (json["columns"][8] == '2011') {
       district_type = '2011';
+      candidateMarker = MapsLib.candidate2011Marker;
+    }
+    else if (json["columns"][8] == 'both') {
+      district_type = 'both';
+      candidateMarker = MapsLib.candidateBothMarker;
+    }
     //console.log('district_type: ' + district_type);
+
+    $('#candidatesCount' + district_type).html(data.length);
 
     var results = $("#candidatesList" + district_type);
     results.hide().empty(); //hide the existing list and empty it out first
@@ -326,18 +348,18 @@ var MapsLib = {
         
         setTimeout((function(row) {
              return function(){
-                MapsLib.addCandidateMarker(data[row], district_type);
+                MapsLib.addCandidateMarker(data[row], district_type, candidateMarker);
              };
          })(row), counter * 0); //change this to 100 for cool animation!
 
         counter++;
 
         template = "\
-          <p>\
-            <strong>" + data[row][0] + " " + data[row][1] + "</strong>\
-            <br />\
-            " + data[row][2] + "\
-          </p>"
+          <h5>\
+            <img src='" + candidateMarker + "' alt='" + data[row][0] + " " + data[row][1] + "' />\
+            " + data[row][0] + " " + data[row][1] + "\
+            <small>" + data[row][2] + "</small>\
+          </h5>"
 
         results.append(template);
       }
@@ -355,13 +377,15 @@ var MapsLib = {
     $("#" + selector).fadeIn();
   },
 
-  addCandidateMarker: function(record, district_type) {
+  addCandidateMarker: function(record, district_type, candidateMarker) {
     //console.log(record);
+
     var coordinate = new google.maps.LatLng(record[3],record[4])
     var marker = new google.maps.Marker({
       map: map,
       position: coordinate,
-      animation: google.maps.Animation.DROP
+      animation: google.maps.Animation.DROP,
+      icon: new google.maps.MarkerImage(candidateMarker)
     });
     MapsLib.markers.push(marker);
 
@@ -391,7 +415,7 @@ var MapsLib = {
     var selectColumns = "geometry";
     MapsLib.query(selectColumns, whereClause, MapsLib.house2001_id, "MapsLib.setMapBounds");
     MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.setMapBounds");
-    MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.setMapBounds");
+    //MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.setMapBounds");
   },
 
   setMapBounds: function(json) {

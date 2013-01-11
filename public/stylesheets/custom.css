@@ -24,6 +24,15 @@ a { color: #4B58A6; }
 .filter-purple { background-color: #7C54FB; }
 .filter-red { background-color: #FB6353; }
 
-.map-icar {color: #d95f02;}
+.map-both {color: #d95f02;}
 .map-2011 {color: #1b9e77;}
 .map-2001 {color: #7570b3;}
+
+.candidate-list{
+  overflow: auto;
+  height: 100px;
+}
+
+h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
+  color: #888;
+}
