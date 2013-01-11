@@ -412,7 +412,7 @@ var MapsLib = {
         </div>";
 
     //add a click listener to the marker to open an InfoWindow,
-    google.maps.event.addListener(marker, 'click', function(event) {
+    google.maps.event.addListener(marker, 'mouseover', function(event) {
       if(MapsLib.infoWindow) MapsLib.infoWindow.close();
 
       MapsLib.infoWindow = new google.maps.InfoWindow( {
@@ -420,6 +420,9 @@ var MapsLib = {
         content: content
       });
       MapsLib.infoWindow.open(map);
+    });
+    google.maps.event.addListener(marker, 'mouseout', function(event) {
+      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
     });
 
     $('#candidate-' + record[9]).hover(
