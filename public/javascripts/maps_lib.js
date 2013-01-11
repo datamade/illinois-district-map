@@ -48,9 +48,9 @@ var MapsLib = {
   markers: [],
   
   initialize: function() {
-    $("#district2001_results").html("");
-    $("#district2011_results").html("");
-    $("#districtICAR_results").html("");
+    $(".district2001_results").html("");
+    $(".district2011_results").html("");
+    $(".districtICAR_results").html("");
   
     geocoder = new google.maps.Geocoder();
     var myOptions = {
@@ -149,18 +149,6 @@ var MapsLib = {
       MapsLib.records2011.setMap(map);
       MapsLib.getDistrict2011Number(whereClause);
 
-      // MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
-      //   query: {
-      //     from:   MapsLib.houseICAR_id,
-      //     select: MapsLib.locationColumn,
-      //     where:  whereClause
-      //   },
-      //   styleId: 2,
-      //   templateId: 2
-      // });
-      // MapsLib.recordsICAR.setMap(map);
-      // MapsLib.getDistrictICARNumber(whereClause);
-
       MapsLib.addMapBounds(whereClause);
 
       $('#enter_search').hide();
@@ -180,7 +168,7 @@ var MapsLib = {
       MapsLib.enableMapTips();
 
       google.maps.event.addListener(MapsLib.records2011, 'click', function(event) {
-        console.log('clicked! ' + event.latLng);
+        //console.log('clicked! ' + event.latLng);
         MapsLib.addrFromLatLng(event.latLng);
       });
     }
@@ -358,18 +346,18 @@ var MapsLib = {
       district_type = 'both';
       candidateMarker = MapsLib.candidateBothMarker;
     }
-    //console.log('district_type: ' + district_type);
-
-    $('#candidatesCount' + district_type).html(data.length);
-
+    
+    var can_count = 0;
     var results = $("#candidatesList" + district_type);
     results.hide().empty(); //hide the existing list and empty it out first
 
     if (data == null) {
       //clear results list
-      results.append("<li><span class='lead'>No candidates found</span></li>");
+      results.append("<h5>No candidates found</h5>");
     }
     else {
+      can_count = data.length;
+
       var counter = 0;
       for (var row in data) {
         
@@ -391,17 +379,23 @@ var MapsLib = {
         results.append(template);
       }
     }
-    var resultCount = 0;
-    if (data != undefined)
-      resultCount = data.length;
+
+    if (district_type != 'both') {
+      if (can_count == 1)
+        can_count = can_count + " candidate was"
+      else
+        can_count = can_count + " candidates were"
+    }
+
+    $('#candidatesCount' + district_type).html(can_count);
     results.fadeIn(); //tada!
   },
 
   renderSidebar: function(selector, text) {
-    $("#" + selector).fadeOut(function() {
-      $("#" + selector).html(text);
+    $("." + selector).fadeOut(function() {
+      $("." + selector).html(text);
     });
-    $("#" + selector).fadeIn();
+    $("." + selector).fadeIn();
   },
 
   addCandidateMarker: function(record, district_type, candidateMarker) {
@@ -490,13 +484,12 @@ var MapsLib = {
 
   numberSuffix: function(d) {
     var lastDigit = d[d.toString().length-1];
-    
     // Default to "th"
     var suffix = "th";
     switch(lastDigit) {
-        case 1: suffix = "st";
-        case 2: suffix = "nd";
-        case 3: suffix = "rd";
+        case '1': suffix = "st"; break;
+        case '2': suffix = "nd"; break;
+        case '3': suffix = "rd"; break;
     }
     return d + suffix;
   }

@@ -30,9 +30,17 @@ a { color: #4B58A6; }
 
 .candidate-list{
   overflow: auto;
-  height: 100px;
+  height: 250px;
 }
 
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
   color: #888;
+}
+
+.accordion-heading {
+  font-size: 1.2em;
+}
+
+.accordion-group {
+  background-color: #fff;
 }
