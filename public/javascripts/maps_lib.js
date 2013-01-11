@@ -360,23 +360,16 @@ var MapsLib = {
 
       var counter = 0;
       for (var row in data) {
-        
-        setTimeout((function(row) {
-             return function(){
-                MapsLib.addCandidateMarker(data[row], district_type, candidateMarker);
-             };
-         })(row), counter * 0); //change this to 100 for cool animation!
-
-        counter++;
 
         template = "\
-          <h5>\
+          <h5 id='candidate-" + data[row][9] + "''>\
             <img src='" + candidateMarker + "' alt='" + data[row][0] + " " + data[row][1] + "' />\
             " + data[row][0] + " " + data[row][1] + "\
             <small>" + data[row][2] + "</small>\
           </h5>"
 
         results.append(template);
+        MapsLib.addCandidateMarker(data[row], district_type, candidateMarker);
       }
     }
 
@@ -408,15 +401,14 @@ var MapsLib = {
       animation: google.maps.Animation.DROP,
       icon: new google.maps.MarkerImage(candidateMarker)
     });
-    MapsLib.markers.push(marker);
+    MapsLib.markers[record[9]] = marker;
 
     var content = "\
         <div class='googft-info-window' style='font-family: sans-serif'>\
           <span class='lead'>" + record[0] + " " + record[1] + "</span>\
-          <br /><strong>Seeking:</strong> " + record[2] + "\
-          <br /><strong>2001 district:</strong> " + record[5] + "\
-          <br /><strong>2011 district:</strong> " + record[6] + "\
-          <br /><strong>ICAR district:</strong> " + record[7] + "\
+          <br />" + record[2] + "\
+          <br /><strong>2001 district:</strong> " + MapsLib.numberSuffix(record[5]) + "\
+          <br /><strong>2011 district:</strong> " + MapsLib.numberSuffix(record[6]) + "\
         </div>";
 
     //add a click listener to the marker to open an InfoWindow,
@@ -430,6 +422,21 @@ var MapsLib = {
       MapsLib.infoWindow.open(map);
     });
 
+    $('#candidate-' + record[9]).hover(
+      function(){
+      if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+
+      console.log(record[9] + " clicked");
+
+      MapsLib.infoWindow = new google.maps.InfoWindow( {
+        position: coordinate,
+        content: content
+      });
+      MapsLib.infoWindow.open(map);
+      },
+      function () {
+        if(MapsLib.infoWindow) MapsLib.infoWindow.close();
+      });
   },
 
   addMapBounds: function(whereClause) {
