@@ -426,13 +426,12 @@ var MapsLib = {
       function(){
       if(MapsLib.infoWindow) MapsLib.infoWindow.close();
 
-      console.log(record[9] + " clicked");
-
       MapsLib.infoWindow = new google.maps.InfoWindow( {
         position: coordinate,
         content: content
       });
       MapsLib.infoWindow.open(map);
+      map.setCenter(marker.getPosition())
       },
       function () {
         if(MapsLib.infoWindow) MapsLib.infoWindow.close();
