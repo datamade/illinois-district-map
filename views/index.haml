@@ -6,7 +6,7 @@
         <small>(<a id='find_me' href='#'>find me</a>)</small>
 
       .input-append
-        %input#search_address.span8{:placeholder => "Enter an address or an intersection", :type => "text"}
+        %input#search_address.span8{:placeholder => "Enter an address or town", :type => "text"}
       
         %input#search.btn.btn-primary{:type => "button", :value => "Search"}
         %button#reset.btn Reset
@@ -14,10 +14,15 @@
     .well
       #enter_search
         %p
-          This is a tool for exploring Illinois Legislative Districts and the 
-          candidates that run in them.
+          This is a tool for exploring 
+          %strong Illinois Legislative Districts 
+          and the 
+          %strong candidates 
+          that run in them.
         %p
-          Enter an address above to get started.
+          Enter an address above 
+          or click the map
+          to get started!
 
       .accordion#results{:style => 'display:none;'}
         %p
