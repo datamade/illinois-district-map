@@ -41,6 +41,7 @@ var MapsLib = {
   
   searchRadius:       0.001,       //in meters ~ 1/2 mile
   defaultZoom:        7,             //zoom level when map is loaded (bigger is more zoomed in)
+  animationDelay:     200,
   addrMarkerImage: 'http://derekeder.com/images/icons/blue-pushpin.png',
   currentPinpoint: null,
   number2001: null,
@@ -436,10 +437,10 @@ var MapsLib = {
           content: content
         });
         MapsLib.infoWindow.open(map);
-      },100);
+      },MapsLib.animationDelay);
     });
     google.maps.event.addListener(marker, 'mouseout', function(event) {
-      setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, 100);
+      setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, MapsLib.animationDelay);
     });
 
     $('#candidate-' + record[9]).hover(
@@ -453,10 +454,10 @@ var MapsLib = {
           });
           MapsLib.infoWindow.open(map);
           map.panTo(marker.getPosition());
-        }, 100);
+        }, MapsLib.animationDelay);
       },
       function () {
-        setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, 100);
+        setTimeout(function(){if(MapsLib.infoWindow) MapsLib.infoWindow.close();}, MapsLib.animationDelay);
       });
   },
 
