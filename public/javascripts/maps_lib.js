@@ -21,7 +21,7 @@ var MapsLib = {
   house2001_id:      "199FXtaeX3tF1XDmnVGeJht67habsQ6z1fn4bMz8",
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
-  candidates_id:     "15oTywHCCliX6tdkuV7FTOLqORLsm7y7wjXKegiw",
+  candidates_id:     "1UUZBUr1hTpLk1u7xbUuCJhNGa3SxCNRNNTonCEY",
 
   candidate2001Marker: '/icons/candidate-purple',
   candidate2011Marker: '/icons/candidate-green',
@@ -231,12 +231,14 @@ var MapsLib = {
     });
   },
   
-  query: function(selectColumns, whereClause, fusionTableId, callback) {
+  query: function(selectColumns, whereClause, sortBy, fusionTableId, callback) {
     var queryStr = [];
     queryStr.push("SELECT " + selectColumns);
     queryStr.push(" FROM " + fusionTableId);
     if (whereClause != '')
       queryStr.push(" WHERE " + whereClause);
+    if (sortBy != '')
+      queryStr.push(" ORDER BY " + sortBy);
   
     //console.log(queryStr.join(" "));
     var sql = encodeURIComponent(queryStr.join(" "));
@@ -278,7 +280,7 @@ var MapsLib = {
 
   getDistrict2001Number: function(whereClause) {
     var selectColumns = "'District Number'";
-    MapsLib.query(selectColumns, whereClause, MapsLib.house2001_id, "MapsLib.displayDistrict2001Number");
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.house2001_id, "MapsLib.displayDistrict2001Number");
   },
   
   displayDistrict2001Number: function(json) { 
@@ -294,7 +296,7 @@ var MapsLib = {
   
   getDistrict2011Number: function(whereClause) {
     var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
-    MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.displayDistrict2011Number");
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.house2011_id, "MapsLib.displayDistrict2011Number");
   },
   
   displayDistrict2011Number: function(json) { 
@@ -321,14 +323,14 @@ var MapsLib = {
 
   getCandidates: function(district_type) {
     var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id, winner_incumbent";
-    var whereClause = "";
+    var whereClause = "seeking CONTAINS IGNORING CASE 'house' AND ";
     if (district_type == '2001')
       whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 NOT EQUAL TO " + MapsLib.number2011;
     if (district_type == '2011')
       whereClause = "district_2001 NOT EQUAL TO " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
     if (district_type == 'both')
       whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
-    MapsLib.query(selectColumns, whereClause, MapsLib.candidates_id, "MapsLib.renderCandidates");
+    MapsLib.query(selectColumns, whereClause, 'lastname', MapsLib.candidates_id, "MapsLib.renderCandidates");
   },
 
   renderCandidates: function(json) {
@@ -414,7 +416,7 @@ var MapsLib = {
       map: map,
       position: coordinate,
       animation: google.maps.Animation.DROP,
-      icon: new google.maps.MarkerImage(candidateMarker + '.png')
+      icon: new google.maps.MarkerImage(candidateMarker + '.png?2')
     });
     MapsLib.markers[record[9]] = marker;
 
@@ -463,9 +465,9 @@ var MapsLib = {
 
   addMapBounds: function(whereClause) {
     var selectColumns = "geometry";
-    MapsLib.query(selectColumns, whereClause, MapsLib.house2001_id, "MapsLib.setMapBounds");
-    MapsLib.query(selectColumns, whereClause, MapsLib.house2011_id, "MapsLib.setMapBounds");
-    //MapsLib.query(selectColumns, whereClause, MapsLib.houseICAR_id, "MapsLib.setMapBounds");
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.house2001_id, "MapsLib.setMapBounds");
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.house2011_id, "MapsLib.setMapBounds");
+    //MapsLib.query(selectColumns, whereClause, '', MapsLib.houseICAR_id, "MapsLib.setMapBounds");
   },
 
   setMapBounds: function(json) {
