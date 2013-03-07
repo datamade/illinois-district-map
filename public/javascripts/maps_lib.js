@@ -139,6 +139,7 @@ var MapsLib = {
       });
       MapsLib.records2001.setMap(map);
       MapsLib.getDistrict2001Number(whereClause);
+      //MapsLib.enable2001MapTips();
 
       MapsLib.records2011 = new google.maps.FusionTablesLayer({
         query: {
@@ -149,9 +150,8 @@ var MapsLib = {
         styleId: 2,
         templateId: 2
       });
-      MapsLib.records2011.setMap(map);
+      MapsLib.records2011.setMap(map);      
       MapsLib.getDistrict2011Number(whereClause);
-      //MapsLib.enableMapTips();
 
       MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
         query: {
@@ -180,7 +180,7 @@ var MapsLib = {
         suppressInfoWindows: true
       });
       MapsLib.records2011.setMap(map);
-      //MapsLib.enableMapTips();
+      MapsLib.enable2011MapTips();
 
       google.maps.event.addListener(MapsLib.records2011, 'click', function(event) {
         //console.log('clicked! ' + event.latLng);
@@ -274,25 +274,29 @@ var MapsLib = {
     }
   },
 
-  // enable2001MapTips: function () {
-  //   MapsLib.records2001.enableMapTips({
-  //     select: "'District Number'",
-  //     from: MapsLib.house2001_id,
-  //     geometryColumn: MapsLib.locationColumn,
-  //     googleApiKey: MapsLib.googleApiKey,
-  //     delay: 100
-  //   });
-  // },
+  enable2001MapTips: function () {
+    if (MapsLib.records2001 != null) {
+      MapsLib.records2001.enableMapTips({
+        select: "'District Number'",
+        from: MapsLib.house2001_id,
+        geometryColumn: MapsLib.locationColumn,
+        googleApiKey: MapsLib.googleApiKey,
+        delay: 100
+      });
+    }
+  },
 
-  // enableMapTips: function () {
-  //   MapsLib.records2011.enableMapTips({
-  //     select: "name",
-  //     from: MapsLib.house2011_id,
-  //     geometryColumn: MapsLib.locationColumn,
-  //     googleApiKey: MapsLib.googleApiKey,
-  //     delay: 100
-  //   });
-  // },
+  enable2011MapTips: function () {
+    if (MapsLib.records2011 != null) {
+      MapsLib.records2011.enableMapTips({
+        select: "name",
+        from: MapsLib.house2011_id,
+        geometryColumn: MapsLib.locationColumn,
+        googleApiKey: MapsLib.googleApiKey,
+        delay: 100
+      });
+    }
+  },
 
   getDistrict2001Number: function(whereClause) {
     var selectColumns = "'District Number'";

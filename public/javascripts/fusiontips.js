@@ -304,7 +304,8 @@
    * Disable map tips for the fusion layer.
    */
   google.maps.FusionTablesLayer.prototype.disableMapTips = function() {
-    this.maptipOverlay_.setMap(null);
+    if (this.maptipOverlay_ != null)
+      this.maptipOverlay_.setMap(null);
     this.maptipOverlay_ = null;
     google.maps.event.removeListener(this.mousemoveListener_);
     this.mousemoveListener_ = null;
