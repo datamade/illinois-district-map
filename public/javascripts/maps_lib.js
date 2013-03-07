@@ -77,7 +77,9 @@ var MapsLib = {
     
     //reset filters
     $("#search_address").val(MapsLib.convertToPlainString($.address.parameter('address')));
-    $(":checkbox").attr("checked", "checked");
+    $("#cbtoggle2001").attr("checked", true);
+    $("#cbtoggle2011").attr("checked", true);
+    $("#cbtoggleICAR").attr("checked", false);
      
     //run the default search
     MapsLib.doSearch();
@@ -151,7 +153,18 @@ var MapsLib = {
       MapsLib.getDistrict2011Number(whereClause);
       //MapsLib.enableMapTips();
 
+      MapsLib.recordsICAR = new google.maps.FusionTablesLayer({
+        query: {
+          from:   MapsLib.houseICAR_id,
+          select: MapsLib.locationColumn,
+          where:  whereClause
+        },
+        styleId: 2,
+        templateId: 2
+      });
+
       MapsLib.addMapBounds(whereClause);
+
 
       $('#enter_search').hide();
       $('#results').show();
@@ -480,7 +493,7 @@ var MapsLib = {
     var selectColumns = "geometry";
     MapsLib.query(selectColumns, whereClause, '', MapsLib.house2001_id, "MapsLib.setMapBounds");
     MapsLib.query(selectColumns, whereClause, '', MapsLib.house2011_id, "MapsLib.setMapBounds");
-    //MapsLib.query(selectColumns, whereClause, '', MapsLib.houseICAR_id, "MapsLib.setMapBounds");
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.houseICAR_id, "MapsLib.setMapBounds");
   },
 
   setMapBounds: function(json) {

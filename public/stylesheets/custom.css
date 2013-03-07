@@ -30,7 +30,7 @@ a { color: #4B58A6; }
 
 .candidate-list{
   overflow: auto;
-  height: 250px;
+  height: 200px;
 }
 
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
@@ -43,4 +43,12 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
 
 .accordion-group {
   background-color: #fff;
+}
+
+#district-selectors{
+  white-space:nowrap;
+}
+
+#district-selectors li {
+  padding-right: 20px;
 }
