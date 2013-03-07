@@ -149,6 +149,7 @@ var MapsLib = {
       });
       MapsLib.records2011.setMap(map);
       MapsLib.getDistrict2011Number(whereClause);
+      //MapsLib.enableMapTips();
 
       MapsLib.addMapBounds(whereClause);
 
@@ -166,7 +167,7 @@ var MapsLib = {
         suppressInfoWindows: true
       });
       MapsLib.records2011.setMap(map);
-      MapsLib.enableMapTips();
+      //MapsLib.enableMapTips();
 
       google.maps.event.addListener(MapsLib.records2011, 'click', function(event) {
         //console.log('clicked! ' + event.latLng);
@@ -190,7 +191,11 @@ var MapsLib = {
     MapsLib.number2001 = null;
     MapsLib.number2011 = null;
 
-    //clear map markers
+    MapsLib.clearMarkers();
+    MapsLib.map_bounds = new google.maps.LatLngBounds();
+  },
+
+  clearMarkers: function() {
     if (MapsLib.markers) {
       for (i in MapsLib.markers) {
         MapsLib.markers[i].setMap(null);
@@ -198,8 +203,6 @@ var MapsLib = {
       google.maps.event.clearListeners(map, 'click');
       MapsLib.markers = [];
     } 
-
-    MapsLib.map_bounds = new google.maps.LatLngBounds();
   },
   
   findMe: function() {
@@ -268,15 +271,15 @@ var MapsLib = {
   //   });
   // },
 
-  enableMapTips: function () {
-    MapsLib.records2011.enableMapTips({
-      select: "name",
-      from: MapsLib.house2011_id,
-      geometryColumn: MapsLib.locationColumn,
-      googleApiKey: MapsLib.googleApiKey,
-      delay: 100
-    });
-  },
+  // enableMapTips: function () {
+  //   MapsLib.records2011.enableMapTips({
+  //     select: "name",
+  //     from: MapsLib.house2011_id,
+  //     geometryColumn: MapsLib.locationColumn,
+  //     googleApiKey: MapsLib.googleApiKey,
+  //     delay: 100
+  //   });
+  // },
 
   getDistrict2001Number: function(whereClause) {
     var selectColumns = "'District Number'";
@@ -322,7 +325,7 @@ var MapsLib = {
   },
 
   getCandidates: function(district_type) {
-    var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id, winner_incumbent";
+    var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id, winner_incumbent, '2010 Winner', '2011 Winner', '2012 Winner'";
     var whereClause = "seeking CONTAINS IGNORING CASE 'house' AND ";
     if (district_type == '2001')
       whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 NOT EQUAL TO " + MapsLib.number2011;
@@ -364,7 +367,9 @@ var MapsLib = {
       var counter = 0;
       for (var row in data) {
 
-        var election_status = MapsLib.electionStatus(data[row][10]);
+        var election_status_2010 = MapsLib.electionStatus(data[row][11], '2010', ',');
+        var election_status_2011 = MapsLib.electionStatus(data[row][12], '2011', ',');
+        var election_status_2012 = MapsLib.electionStatus(data[row][13], '2012', '');
 
         var marker = candidateMarker;
         if (data[row][10] == '1') marker = marker + "-won";
@@ -374,7 +379,11 @@ var MapsLib = {
           <h5 id='candidate-" + data[row][9] + "''>\
             <img src='" + marker + ".png' alt='" + data[row][0] + " " + data[row][1] + "' />\
             " + data[row][0] + " " + data[row][1] + "\
-            <small>" + data[row][2] + " "  + election_status + "</small>\
+            <small>" + data[row][2] + "\
+             " + election_status_2010 + "\
+             " + election_status_2011 + "\
+             " + election_status_2012 + "\
+             " + "</small>\
           </h5>"
 
         results.append(template);
@@ -393,9 +402,9 @@ var MapsLib = {
     results.fadeIn(); //tada!
   },
 
-  electionStatus: function(status) {
-    var election_status = '<strong style="color: red;">Lost</strong>';
-    if (status == '1') election_status = '<strong style="color: green;">Won</strong>';
+  electionStatus: function(status, year, separator) {
+    var election_status = '';
+    if (status == '1') election_status = '<strong style="color: green;">Won in ' + year + '</strong>' + separator;
     return election_status;
   },
 
@@ -409,7 +418,9 @@ var MapsLib = {
   addCandidateMarker: function(record, district_type, candidateMarker) {
     //console.log(record);
 
-    var election_status = MapsLib.electionStatus(record[10]);
+    var election_status_2010 = MapsLib.electionStatus(record[11], '2010', '<br />');
+    var election_status_2011 = MapsLib.electionStatus(record[12], '2011', '<br />');
+    var election_status_2012 = MapsLib.electionStatus(record[13], '2012', '<br />');
 
     var coordinate = new google.maps.LatLng(record[3],record[4])
     var marker = new google.maps.Marker({
@@ -423,9 +434,11 @@ var MapsLib = {
     var content = "\
         <div class='googft-info-window' style='font-family: sans-serif'>\
           <span class='lead'>" + record[0] + " " + record[1] + "</span>\
-          <br />" + record[2] + "\
-          <br />" + election_status + "\
-          <br /><strong>2001 district:</strong> " + MapsLib.numberSuffix(record[5]) + "\
+          <br />" + record[2] + "<br />\
+          " + election_status_2010 + "\
+          " + election_status_2011 + "\
+          " + election_status_2012 + "\
+          <strong>2001 district:</strong> " + MapsLib.numberSuffix(record[5]) + "\
           <br /><strong>2011 district:</strong> " + MapsLib.numberSuffix(record[6]) + "\
         </div>";
 
