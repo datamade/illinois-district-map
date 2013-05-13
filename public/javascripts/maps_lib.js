@@ -18,7 +18,7 @@ var MapsLib = {
   
   //the encrypted Table ID of your Fusion Table (found under File => About)
   //NOTE: numeric IDs will be depricated soon
-  house2001_id:      "199FXtaeX3tF1XDmnVGeJht67habsQ6z1fn4bMz8",
+  house2001_id:      "1Xwb36ebalX5G0xeJjUEt94Ul83g-g21PZDVLfec",
   house2011_id:      "1M0FQ1XlbyNI4ClGy-zF8SFkphAs-267164Cv7vw",
   houseICAR_id:      "1NaFwd9TN9V2jkI_xUh3QgjK4yQg42tT_jpSXfkU",  
   candidates_id:     "1UUZBUr1hTpLk1u7xbUuCJhNGa3SxCNRNNTonCEY",
