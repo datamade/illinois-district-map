@@ -85,6 +85,50 @@ var MapsLib = {
     //run the default search
     MapsLib.doSearch();
   },
+
+  initializeStoryMap: function(where2011, whereCandidates) {
+
+    var myOptions = {
+      zoom: MapsLib.defaultZoom,
+      center: MapsLib.map_centroid,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      styles: [
+        {
+          stylers: [
+            { saturation: -100 },
+            { lightness: 40 }
+          ]
+        }
+      ]
+    };
+    map = new google.maps.Map($("#map_canvas")[0],myOptions);
+    MapsLib.map_bounds = new google.maps.LatLngBounds();
+
+    MapsLib.records2011 = new google.maps.FusionTablesLayer({
+      query: {
+        from:   MapsLib.house2011_id,
+        select: MapsLib.locationColumn,
+        where:  where2011
+      },
+      styleId: 2,
+      templateId: 2
+    });
+    MapsLib.records2011.setMap(map);
+    MapsLib.query(MapsLib.locationColumn, where2011, '', MapsLib.house2011_id, "MapsLib.setMapBounds");
+
+    MapsLib.recordsCandidates = new google.maps.FusionTablesLayer({
+      query: {
+        from:   MapsLib.candidates_id,
+        select: MapsLib.locationColumn,
+        where:  whereCandidates
+      },
+      styleId: 2,
+      templateId: 2
+    });
+    MapsLib.recordsCandidates.setMap(map);
+    MapsLib.query(MapsLib.locationColumn, whereCandidates, '', MapsLib.candidates_id, "MapsLib.setMapBounds");
+    
+  },
   
   doSearch: function(location) {
     MapsLib.clearSearch();
@@ -364,11 +408,11 @@ var MapsLib = {
     var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id, winner_incumbent, '2010 Winner', '2011 Winner', '2012 Winner'";
     var whereClause = "seeking CONTAINS IGNORING CASE 'house' AND ";
     if (district_type == '2001')
-      whereClause = "district_2001 = " + MapsLib.number2001;
+      whereClause += "district_2001 = " + MapsLib.number2001;
     if (district_type == '2011')
-      whereClause = "district_2011 = " + MapsLib.number2011;
+      whereClause += "district_2011 = " + MapsLib.number2011;
     if (district_type == 'icar')
-      whereClause = "district_icar = " + MapsLib.numberICAR;
+      whereClause += "district_icar = " + MapsLib.numberICAR;
     MapsLib.query(selectColumns, whereClause, 'lastname', MapsLib.candidates_id, "MapsLib.renderCandidates");
   },
 

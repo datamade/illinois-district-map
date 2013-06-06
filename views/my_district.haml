@@ -23,12 +23,12 @@
           %li
             %label.checkbox.inline
               %input#cbtoggle2001{:type => "checkbox"}
-              Old:
+              2001:
               %strong.district2001_results.map-2001
           %li
             %label.checkbox.inline
               %input#cbtoggle2011{:type => "checkbox"}
-              New:
+              2011:
               %strong.district2011_results.map-2011
           %li
             %label.checkbox.inline
@@ -51,7 +51,7 @@
             .accordion-heading
               %a.accordion-toggle.map-2011{"data-parent" => "#results", "data-toggle" => "collapse", :href => "#results2011"}
                 %span#candidatesCount2011
-                in your old district &raquo;
+                in your 2001 district &raquo;
             .accordion-body.collapse#results2011
               .accordion-inner
                 #candidatesList2011.candidate-list
@@ -60,7 +60,7 @@
             .accordion-heading
               %a.accordion-toggle.map-2001{"data-parent" => "#results", "data-toggle" => "collapse", :href => "#results2001"}
                 %span#candidatesCount2001
-                in your new district &raquo;
+                in your 2011 district &raquo;
             .accordion-body.collapse#results2001
               .accordion-inner
                 #candidatesList2001.candidate-list

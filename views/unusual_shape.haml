@@ -5,11 +5,18 @@
 
     %h2 An unusual shape
 
-    %p
-      [For an image, I’m seeing maybe two, and maybe we pick which one is better. One would be the 29th, 33rd and 34th districts, with pinpoints for the three incumbents, while the other would be the current 27th, 28th, 31st, 32nd, 35th and 36th, again with pinpoints for the incumbents.]
+.row-fluid
+  .span10.offset1
 
+    #map_canvas{:style => 'height: 400px'}
+
+    %h4 Background
     %p
-      Districts should represent communities and so, to the extent possible, district boundaries should follow the ends of those communities. One striking aspect of the current legislative map is the number of districts that radiate out from Chicago into the suburbs, stretching like fingers, or maybe strips of bacon. In particular, to the south and southeast of the City, the 29th, 33rd, and 34th House Districts originate in southeastern Chicago and stretch southward into Will County, slicing through many towns, townships, and counties along the way. On the southwest of the City, five House districts, the 27th, 28th, 31st, 32nd, and 36th, radiate out through other towns toward DuPage and Will counties.
+      Districts should represent communities and so, to the extent possible, district boundaries should follow the ends of those communities. One striking aspect of the current legislative map is the number of districts that radiate out from Chicago into the suburbs, stretching like fingers, or maybe strips of bacon. 
+
+    %h4 Redistricted
+    %p
+      In particular, to the south and southeast of the City, the 29th, 33rd, and 34th House Districts originate in southeastern Chicago and stretch southward into Will County, slicing through many towns, townships, and counties along the way. On the southwest of the City, five House districts, the 27th, 28th, 31st, 32nd, and 36th, radiate out through other towns toward DuPage and Will counties.
 
     %p
       There is some basis for these lines, in that the population of racial minorities living in the region justifies creating several majority-minority districts, and doing so may require following residential patterns more than municipal boundaries. But these districts go beyond what is needed for that purpose, and also create seats that will be held by Chicagoans. 
@@ -18,4 +25,13 @@
       The 29th, 33rd and 34th districts split through the southern suburb of the Calumet City, which itself is majority African-American. State Rep. Thaddeus Jones, first elected in 2010, lives in Cal City, and after the 2012 elections represents the 29th District, which runs from Calumet Park in the north to Crete in Will County and then west to Monee. His house is three blocks west of the eastern boundary of his district. That eastern boundary marks the start of the 34th District, represented by Democratic Rep. Elgie Sims. The district is only 11 blocks wide at that point, and then the 33rd District takes over.  Both the 33rd and 34th Districts run in a narrow strip starting in Chicago. The 33rd runs as far south as Sauk Village, while the 34th goes all the way to Peotone. Both districts include slivers of Cal City, Lansing, and Lynwood. At the time of the 2012 elections, the two state reps for these districts both lived in Chicago, in the northern reaches of the districts. And with the state rep from the 29th living in Cal City, none of the elected officials from these three districts lives south of I-80.
 
     %p
-      The 27th, 28th, 31st, 32nd, 35th and 36th districts all begin in or near Chicago and radiate westward to the Cook County line. Three of the districts are "majority-minority" (the 27th, 31st and 32nd), while the other three are not. All six slice through parts and pieces of western suburbs; the towns of Hodgkins, Justice, Hickory Hills, Palos Hills, Chicago Ridge, Oak Lawn, Crestwood, Midlothian, Orland Park, and Oak Forest are all divide among two or more districts. And yet, four of the six representatives for these districts live in the City of Chicago. Only two of the six live west of Western Avenue (three Chicagoans and one suburbanite), and none of the six live west of Pulaski, despite representing districts that run to Cook County’s western boundary. 
+      The 27th, 28th, 31st, 32nd, 35th and 36th districts all begin in or near Chicago and radiate westward to the Cook Co0unty line. Three of the districts are majority-minority” (the 27th, 31st and 32nd), while the other three are not. All six slice through parts and pieces of western suburbs; the towns of Hodgkins, Justice, Hickory Hills, Palos Hills, Chicago Ridge, Oak Lawn, Crestwood, Midlothian, Orland Park, and Oak Forest are all divide among two or more districts. And yet, four of the six representatives for these districts live in the City of Chicago. Only two of the six live west of Western Avenue (three Chicagoans and one suburbanite), and none of the six live west of Pulaski, despite representing districts that run to Cook County’s western boundary. 
+
+  - content_for :javascripts do
+    = include_javascript :"http://maps.google.com/maps/api/js?sensor=false"
+    %script{:src => "/javascripts/maps_lib.js", :type => "text/javascript"}
+
+    :javascript    
+      $(function() {
+        MapsLib.initializeStoryMap("name IN (29, 33, 34, 27, 28, 31, 32, 36)", "district_2011 IN (29, 33, 34, 27, 28, 31, 32, 36) AND winner_incumbent = 1");
+      });

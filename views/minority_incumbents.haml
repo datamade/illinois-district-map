@@ -5,14 +5,33 @@
 
     %h2 Minority party incumbents put into the same district
 
+.row-fluid
+  .span6.offset1
+    %h4 Background
     %p
-      [For an image, I see a map of the current 47th District with three pinpoints, one each for the three incumbents who lived there in 2010]
+      Chris Nybo’s 41st District seat had been reliably Republican for years. Though he was a first-term legislator, his predecessor, Republican Bob Biggins, held the seat for almost 20 years. 
 
     %p
-      Chris Nybo’s 41st District seat had been reliably Republican for years. Though he was a first-term legislator, his predecessor, Republican Bob Biggins, held the seat for almost 20 years. In the neighboring district, Dennis Reboletti’s 46th District had also been held by Republicans for a long time; he represented the district since 2006, after he was appointed to take former House Speaker Lee Daniels’ seat. And Patty Bellock in the 47th District had served since 1999, when her predecessor, Judy Biggert, was elected to Congress.
+      In the neighboring district, Dennis Reboletti’s 46th District had also been held by Republicans for a long time; he represented the district since 2006, after he was appointed to take former House Speaker Lee Daniels’ seat. 
+
+    %p 
+      And Patty Bellock in the 47th District had served since 1999, when her predecessor, Judy Biggert, was elected to Congress.
 
     %p
-      The three of them got a surprise when the map came out. Their three homes were thrown into the same district. 
+      %strong
+        The three of them got a surprise when the map came out. Their three homes were thrown into the same district. 
 
+    %h4 Redistricted
     %p
       Bellock ran for re-election in the district, Rebolletti ran for another House seat in a adjoining district (which is permissible only in the year following a remap) and was elected, but in 2014, Reboletti will have to move to his new district or face off against Bellock. Nybo could have run in one of several neighboring districts, but none of them were hospitable either: some of his old district would up in the 7th District, which would reliably elect a Democrat, or the 46th District, which on paper was a partisan toss up.  Instead, he chose to run for the state Senate, losing to incumbent Sen. Kirk Dillard in the primary. 
+
+  .span4#map_canvas{:style => 'height: 500px'}
+
+- content_for :javascripts do
+  = include_javascript :"http://maps.google.com/maps/api/js?sensor=false"
+  %script{:src => "/javascripts/maps_lib.js", :type => "text/javascript"}
+
+  :javascript    
+    $(function() {
+      MapsLib.initializeStoryMap("name=47", "district_2011=47 AND winner_incumbent = 1");
+    });
