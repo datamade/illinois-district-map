@@ -46,6 +46,7 @@ var MapsLib = {
   currentPinpoint: null,
   number2001: null,
   number2011: null,
+  numberICAR: null,
   markers: [],
   
   initialize: function() {
@@ -163,6 +164,7 @@ var MapsLib = {
         templateId: 2
       });
 
+
       MapsLib.addMapBounds(whereClause);
 
 
@@ -203,6 +205,7 @@ var MapsLib = {
 
     MapsLib.number2001 = null;
     MapsLib.number2011 = null;
+    MapsLib.numberICAR = null;
 
     MapsLib.clearMarkers();
     MapsLib.map_bounds = new google.maps.LatLngBounds();
@@ -256,7 +259,7 @@ var MapsLib = {
     if (sortBy != '')
       queryStr.push(" ORDER BY " + sortBy);
   
-    //console.log(queryStr.join(" "));
+    console.log(queryStr.join(" "));
     var sql = encodeURIComponent(queryStr.join(" "));
     $.ajax({url: "https://www.googleapis.com/fusiontables/v1/query?sql="+sql+"&callback="+callback+"&key="+MapsLib.googleApiKey, dataType: "jsonp"});
   },
@@ -330,12 +333,28 @@ var MapsLib = {
     }
   },
 
+  getDistrictICARNumber: function(whereClause) {
+    var selectColumns = "name, TOTPOP, CompactScr, ASIAN_VAP, BLACK_VAP, HISP_VAP, NHW_VAP";
+    MapsLib.query(selectColumns, whereClause, '', MapsLib.houseICAR_id, "MapsLib.displayDistrictICARNumber");
+  },
+  
+  displayDistrictICARNumber: function(json) { 
+    MapsLib.handleError(json);
+    if (json["rows"] != null) {
+      var data = json["rows"];
+
+      MapsLib.numberICAR = data[0][0];
+      MapsLib.renderSidebar("districtICAR_results", MapsLib.numberSuffix(MapsLib.numberICAR))
+      MapsLib.fetchCandidatesForAll();
+    }
+  },
+
   fetchCandidatesForAll: function() {
     if (MapsLib.number2001 != null && MapsLib.number2011 != null)
     {
       MapsLib.getCandidates('2001');
       MapsLib.getCandidates('2011');
-      MapsLib.getCandidates('both');
+      //MapsLib.getCandidates('icar');
     }
     // else
     //   console.log('waiting for all district results');
@@ -345,11 +364,11 @@ var MapsLib = {
     var selectColumns = "firstname, lastname, seeking, latitude, longitude, district_2001, district_2011, district_icar, firstname AS '" + district_type + "', id, winner_incumbent, '2010 Winner', '2011 Winner', '2012 Winner'";
     var whereClause = "seeking CONTAINS IGNORING CASE 'house' AND ";
     if (district_type == '2001')
-      whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 NOT EQUAL TO " + MapsLib.number2011;
+      whereClause = "district_2001 = " + MapsLib.number2001;
     if (district_type == '2011')
-      whereClause = "district_2001 NOT EQUAL TO " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
-    if (district_type == 'both')
-      whereClause = "district_2001 = " + MapsLib.number2001 + " AND district_2011 = " + MapsLib.number2011;
+      whereClause = "district_2011 = " + MapsLib.number2011;
+    if (district_type == 'icar')
+      whereClause = "district_icar = " + MapsLib.numberICAR;
     MapsLib.query(selectColumns, whereClause, 'lastname', MapsLib.candidates_id, "MapsLib.renderCandidates");
   },
 
@@ -410,9 +429,9 @@ var MapsLib = {
 
     if (district_type != 'both') {
       if (can_count == 1)
-        can_count = can_count + " candidate was"
+        can_count = can_count + " candidate are"
       else
-        can_count = can_count + " candidates were"
+        can_count = can_count + " candidates are"
     }
 
     $('#candidatesCount' + district_type).html(can_count);

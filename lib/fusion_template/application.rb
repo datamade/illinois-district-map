@@ -28,6 +28,11 @@ module FusionTemplate
       @current_menu = "home"
       haml :index
     end
+
+    get "/stories/:page" do
+      @current_menu = params[:page]
+      haml 'stories/' + params[:page].to_sym
+    end
     
     get "/:page" do
       @current_menu = params[:page]
