@@ -250,7 +250,7 @@
         if (numRows > 0) {
           row = {};
           
-          html += "House District " + data.rows[0][0];
+          html += "House District " + data.rows[0][0] + '<br />Click to get started';
 
           for (i = 0; i < numCols; i++) {
             var cell = {

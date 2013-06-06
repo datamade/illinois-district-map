@@ -116,6 +116,8 @@ var MapsLib = {
     MapsLib.records2011.setMap(map);
     MapsLib.query(MapsLib.locationColumn, where2011, '', MapsLib.house2011_id, "MapsLib.setMapBounds");
 
+
+    whereCandidates = "seeking CONTAINS IGNORING CASE 'house' AND " + whereCandidates;
     MapsLib.recordsCandidates = new google.maps.FusionTablesLayer({
       query: {
         from:   MapsLib.candidates_id,
