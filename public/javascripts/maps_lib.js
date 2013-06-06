@@ -305,7 +305,7 @@ var MapsLib = {
     if (sortBy != '')
       queryStr.push(" ORDER BY " + sortBy);
   
-    console.log(queryStr.join(" "));
+    //console.log(queryStr.join(" "));
     var sql = encodeURIComponent(queryStr.join(" "));
     $.ajax({url: "https://www.googleapis.com/fusiontables/v1/query?sql="+sql+"&callback="+callback+"&key="+MapsLib.googleApiKey, dataType: "jsonp"});
   },
